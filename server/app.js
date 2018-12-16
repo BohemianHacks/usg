@@ -24,9 +24,6 @@ io.on('connection', function (socket) {
     socket.on('move', function (data) {
         level.players[socket.id].x += data.x;
         level.players[socket.id].y += data.y;
-
-        console.log(data);
-
         io.sockets.emit('level', level);
     });
     socket.on('disconnect', function () {
