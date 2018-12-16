@@ -1,5 +1,6 @@
 import io from 'socket.io-client'
 import * as THREE from 'three';
+import * as LEVEL from '../../shared/level';
 
 const keysPressed = {
     a: false,
@@ -8,7 +9,6 @@ const keysPressed = {
     d: false
 };
 
-let level = null;
 let myID = null;
 
 const mainCanvas = document.getElementById('main_canvas');
@@ -23,7 +23,10 @@ const playerCube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.Mesh
 const otherCube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({color: 'orange'}));
 scene.add(plane);
 
-const players = {};
+const localLevel = {
+    world: null,
+    players: {}
+};
 
 camera.position.x = 5;
 camera.position.y = -5;
@@ -35,22 +38,22 @@ const socket = io.connect('http://localhost:8000');
 socket.on('id', function (newID) {
     myID = newID;
 });
-socket.on('level', function (newLevel) {
-    level = newLevel;
+socket.on('level', function (remoteLevel) {
+    localLevel.world = remoteLevel.world;
 
-    Object.keys(players).forEach(pID => {
-        const pData = level.players[pID];
+    Object.keys(localLevel.players).forEach(pID => {
+        const pData = remoteLevel.players[pID];
         if (pData) {
-            players[pID].position.set(pData.x, pData.y, pData.z);
+            localLevel.players[pID].position.set(pData.position.x, pData.position.y, pData.position.z);
         } else {
-            scene.remove(players[pID]);
-            delete players[pID];
+            scene.remove(localLevel.players[pID]);
+            delete localLevel.players[pID];
         }
     });
 
-    Object.keys(level.players).forEach(pID => {
-        if (!players[pID]) {
-            const pData = level.players[pID];
+    Object.keys(remoteLevel.players).forEach(pID => {
+        if (!localLevel.players[pID]) {
+            const pData = remoteLevel.players[pID];
 
             let pObject = null;
             if (pID === myID) {
@@ -58,8 +61,8 @@ socket.on('level', function (newLevel) {
             } else {
                 pObject = otherCube.clone();
             }
-            players[pID] = pObject;
-            pObject.position.set(pData.x, pData.y, pData.z);
+            localLevel.players[pID] = pObject;
+            pObject.position.set(pData.position.x, pData.position.y, pData.position.z);
             scene.add(pObject);
         }
     });
@@ -79,7 +82,7 @@ const animate = function () {
     const now = performance.now();
     const dt = now - lastTime;
 
-    if (level) {
+    if (localLevel.world) {
         const moveEvent = {
             x: 0,
             y: 0
@@ -98,6 +101,9 @@ const animate = function () {
         }
 
         if (moveEvent.x > 0 || moveEvent.x < 0 || moveEvent.y > 0 || moveEvent.y < 0) {
+            // be optimistic and already move
+            LEVEL.movePlayer(localLevel, myID, moveEvent);
+
             socket.emit("move", moveEvent);
         }
     }
