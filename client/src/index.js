@@ -140,27 +140,30 @@ const animate = function () {
     const dt = now - lastTime;
 
     if (localLevel.players[myID]) {
+        const v = localLevel.players[myID].position.clone().sub(camera.position);
+
         const moveEvent = {
             x: 0,
             y: 0
         };
         if (keysPressed.a) {
-            moveEvent.x = -1;
+            moveEvent.x -= +v.y;
+            moveEvent.y += +v.x;
         }
         if (keysPressed.d) {
-            moveEvent.x = 1;
+            moveEvent.x += +v.y;
+            moveEvent.y -= +v.x;
         }
         if (keysPressed.w) {
-            moveEvent.y = 1;
+            moveEvent.x += v.x;
+            moveEvent.y += v.y;
         }
         if (keysPressed.s) {
-            moveEvent.y = -1;
+            moveEvent.x -= v.x;
+            moveEvent.y -= v.y;
         }
 
         if (moveEvent.x > 0 || moveEvent.x < 0 || moveEvent.y > 0 || moveEvent.y < 0) {
-            // be optimistic and already move
-            LEVEL.movePlayer(localLevel, myID, dt, moveEvent);
-
             socket.emit("move", moveEvent);
         }
     }

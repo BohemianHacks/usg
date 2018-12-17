@@ -28,16 +28,14 @@ io.on('connection', function (socket) {
     socket.on('move', function (data) {
         if (!playerRequests[socket.id]) {
             playerRequests[socket.id] = {
-                move: {
+                moveDirection: {
                     x: 0,
                     y: 0
                 }
             };
         }
-        playerRequests[socket.id].move.x =
-            Math.max(Math.min(playerRequests[socket.id].move.x + data.x, 1), -1);
-        playerRequests[socket.id].move.y =
-            Math.max(Math.min(playerRequests[socket.id].move.y + data.y, 1), -1);
+        playerRequests[socket.id].moveDirection.x += data.x;
+        playerRequests[socket.id].moveDirection.y += data.y;
         io.sockets.emit('level', level);
     });
     socket.on('disconnect', function () {
@@ -53,10 +51,16 @@ setInterval(function () {
     const now = performance.now();
     const dt = now - lastTime;
 
-    level.players['npc_0001'] = {position: {x: Math.sin(lastTime * 0.002) * 3 - 0.5, y: Math.cos(lastTime * 0.002) * 3 - 0.5, z: 0.5}};
+    level.players['npc_0001'] = {
+        position: {
+            x: Math.sin(lastTime * 0.002) * 3 - 0.5,
+            y: Math.cos(lastTime * 0.002) * 3 - 0.5,
+            z: 0.5
+        }
+    };
 
     Object.keys(playerRequests).forEach(pID => {
-        LEVEL.movePlayer(level, pID, dt, playerRequests[pID].move);
+        LEVEL.movePlayer(level, pID, dt, playerRequests[pID].moveDirection);
     });
     playerRequests = {};
 

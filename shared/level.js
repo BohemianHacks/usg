@@ -51,11 +51,17 @@ module.exports = {
         };
     },
 
-    movePlayer: function (level, playerID, dt, movement) {
+    movePlayer: function (level, playerID, dt, direction) {
         const playerPosition = level.players[playerID].position;
 
-        playerPosition.x += movement.x * dt * 0.01;
-        playerPosition.y += movement.y * dt * 0.01;
+        const l = Math.sqrt(direction.x * direction.x + direction.y * direction.y);
+
+        if (l === 0) {
+            return;
+        }
+
+        playerPosition.x += direction.x / l * dt * 0.01;
+        playerPosition.y += direction.y / l * dt * 0.01;
 
         playerPosition.x = Math.min(level.world.dimensions.x / 2 - 1, playerPosition.x);
         playerPosition.x = Math.max(-level.world.dimensions.x / 2, playerPosition.x);
