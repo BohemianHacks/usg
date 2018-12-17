@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import * as LEVEL from '../../shared/level';
 import MATERIALS from './materials';
 
+import './OrbitControls';
+
 const keysPressed = {
     a: false,
     w: false,
@@ -21,8 +23,10 @@ camera.position.set(7, -15, 15);
 camera.up.set(0, 0, 1);
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
+const controls = new THREE.OrbitControls(camera);
+
 const light = new THREE.DirectionalLight('white', 1);
-light.position.set(7, -8, 20);
+light.position.set(10, -15, 20);
 scene.add(light);
 
 const renderer = new THREE.WebGLRenderer({canvas: mainCanvas, antialias: true, alpha: true});
