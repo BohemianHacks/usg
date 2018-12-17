@@ -26,5 +26,5 @@ io.on('connection', function (socket) {
     socket.on('disconnect', function () {
         delete level.players[socket.id];
         io.sockets.emit('level', level);
-    })
+    });
 });
