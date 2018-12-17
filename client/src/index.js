@@ -15,7 +15,7 @@ const mainCanvas = document.getElementById('main_canvas');
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, mainCanvas.offsetWidth / mainCanvas.offsetHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({canvas: mainCanvas, antialias: true});
+const renderer = new THREE.WebGLRenderer({canvas: mainCanvas, antialias: true, alpha: true});
 renderer.setSize(mainCanvas.offsetWidth, mainCanvas.offsetHeight);
 
 const plane = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.MeshBasicMaterial({color: 'green'}));
