@@ -24,10 +24,14 @@ camera.up.set(0, 0, 1);
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 const controls = new THREE.OrbitControls(camera);
+controls.enablePan = false;
 
-const light = new THREE.DirectionalLight('white', 1);
-light.position.set(10, -15, 20);
-scene.add(light);
+const directionalLight = new THREE.DirectionalLight('white', 0.8);
+directionalLight.position.set(10, -15, 20);
+scene.add(directionalLight);
+
+const ambientLight = new THREE.AmbientLight('white', 0.2);
+scene.add(ambientLight);
 
 const renderer = new THREE.WebGLRenderer({canvas: mainCanvas, antialias: true, alpha: true});
 renderer.setSize(mainCanvas.offsetWidth, mainCanvas.offsetHeight);
@@ -84,7 +88,20 @@ socket.on('level', function (remoteLevel) {
     Object.keys(localLevel.players).forEach(pID => {
         const pData = remoteLevel.players[pID];
         if (pData) {
+            if (pID === myID) {
+                // move the camera by the amount the player moved, so it follows the player
+                camera.position.copy(
+                    new THREE.Vector3(pData.position.x, pData.position.y, pData.position.z)
+                        .sub(localLevel.players[pID].position)
+                        .add(camera.position)
+                );
+            }
             localLevel.players[pID].position.set(pData.position.x, pData.position.y, pData.position.z);
+            if (pID === myID) {
+                camera.lookAt(localLevel.players[pID].position);
+                controls.target = localLevel.players[pID].position;
+                controls.update();
+            }
         } else {
             scene.remove(localLevel.players[pID]);
             delete localLevel.players[pID];
@@ -122,7 +139,7 @@ const animate = function () {
     const now = performance.now();
     const dt = now - lastTime;
 
-    if (localLevel.world) {
+    if (localLevel.players[myID]) {
         const moveEvent = {
             x: 0,
             y: 0
