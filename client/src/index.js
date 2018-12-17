@@ -57,12 +57,28 @@ socket.on('level', function (remoteLevel) {
         // TODO server should send a diff of the level
         for (let x = 0; x < localLevel.world.dimensions.x; x++) {
             for (let y = 0; y < localLevel.world.dimensions.y; y++) {
-                const tile = new THREE.Mesh(boxGeometry, MATERIALS[remoteLevel.world.tiles[y * 10 + x]]);
-                tile.position.set(x - localLevel.world.dimensions.x / 2, y - localLevel.world.dimensions.y / 2, -0.5);
-                scene.add(tile);
-                localLevel.world.tiles.push(tile);
+                for (let z = 0; z < localLevel.world.dimensions.z; z++) {
+                    const tile = new THREE.Mesh(boxGeometry,
+                        MATERIALS[
+                            remoteLevel.world.tiles[
+                            z * localLevel.world.dimensions.x * localLevel.world.dimensions.y +
+                            y * localLevel.world.dimensions.x +
+                            x]]);
+                    tile.position.set(
+                        x - localLevel.world.dimensions.x / 2,
+                        y - localLevel.world.dimensions.y / 2,
+                        -z - 0.5
+                    );
+                    scene.add(tile);
+                    localLevel.world.tiles.push(tile);
+                }
             }
         }
+        const gh = new THREE.GridHelper(localLevel.world.dimensions.x, localLevel.world.dimensions.x, 'black', 'black');
+        gh.rotation.x = Math.PI / 2;
+        gh.position.x = -0.5;
+        gh.position.y = -0.5;
+        scene.add(gh);
     }
 
     Object.keys(localLevel.players).forEach(pID => {
