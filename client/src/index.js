@@ -128,21 +128,21 @@ const animate = function () {
             y: 0
         };
         if (keysPressed.a) {
-            moveEvent.x -= (0.01 * dt);
+            moveEvent.x = -1;
         }
         if (keysPressed.d) {
-            moveEvent.x += (0.01 * dt);
+            moveEvent.x = 1;
         }
         if (keysPressed.w) {
-            moveEvent.y += (0.01 * dt);
+            moveEvent.y = 1;
         }
         if (keysPressed.s) {
-            moveEvent.y -= (0.01 * dt);
+            moveEvent.y = -1;
         }
 
         if (moveEvent.x > 0 || moveEvent.x < 0 || moveEvent.y > 0 || moveEvent.y < 0) {
             // be optimistic and already move
-            LEVEL.movePlayer(localLevel, myID, moveEvent);
+            LEVEL.movePlayer(localLevel, myID, dt, moveEvent);
 
             socket.emit("move", moveEvent);
         }
