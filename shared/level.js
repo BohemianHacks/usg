@@ -1,3 +1,8 @@
+const _D = "DIRT";
+const _G = "GRASS";
+const _S = "STONE";
+const _W = "WATER";
+
 module.exports = {
     createLevel: function () {
         return {
@@ -5,7 +10,19 @@ module.exports = {
                 dimensions: {
                     x: 10,
                     y: 10
-                }
+                },
+                tiles: [
+                    _D, _D, _D, _G, _W, _G, _D, _D, _S, _S,
+                    _D, _D, _D, _G, _W, _G, _D, _D, _S, _S,
+                    _D, _D, _D, _G, _W, _G, _D, _D, _S, _S,
+                    _D, _D, _D, _G, _W, _G, _D, _D, _S, _S,
+                    _D, _D, _D, _G, _W, _G, _D, _D, _S, _S,
+                    _D, _D, _D, _G, _W, _G, _D, _D, _S, _S,
+                    _D, _D, _D, _G, _W, _G, _D, _D, _S, _S,
+                    _D, _D, _D, _G, _W, _G, _D, _D, _S, _S,
+                    _D, _D, _D, _G, _W, _G, _D, _D, _S, _S,
+                    _D, _D, _D, _G, _W, _G, _D, _D, _S, _S
+                ]
             },
             players: {}
         };

@@ -1,6 +1,7 @@
 import io from 'socket.io-client'
 import * as THREE from 'three';
 import * as LEVEL from '../../shared/level';
+import MATERIALS from './materials';
 
 const keysPressed = {
     a: false,
@@ -14,32 +15,51 @@ let myID = null;
 const mainCanvas = document.getElementById('main_canvas');
 
 const scene = new THREE.Scene();
+
 const camera = new THREE.PerspectiveCamera(75, mainCanvas.offsetWidth / mainCanvas.offsetHeight, 0.1, 1000);
+camera.position.set(7, -15, 15);
+camera.up.set(0, 0, 1);
+camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+const light = new THREE.DirectionalLight('white', 1);
+light.position.set(7, -8, 20);
+scene.add(light);
+
 const renderer = new THREE.WebGLRenderer({canvas: mainCanvas, antialias: true, alpha: true});
 renderer.setSize(mainCanvas.offsetWidth, mainCanvas.offsetHeight);
 
-const plane = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.MeshBasicMaterial({color: 'green'}));
-const playerCube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({color: 'blue'}));
-const otherCube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({color: 'orange'}));
-scene.add(plane);
+const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+const playerCube = new THREE.Mesh(boxGeometry, new THREE.MeshLambertMaterial({color: 'blue'}));
+const otherCube = new THREE.Mesh(boxGeometry, new THREE.MeshLambertMaterial({color: 'orange'}));
 
 const localLevel = {
-    world: null,
+    world: {
+        dimensions: {
+            x: 0,
+            y: 0
+        },
+        tiles: []
+    },
     players: {}
 };
-
-camera.position.x = 5;
-camera.position.y = -5;
-camera.position.z = 5;
-camera.up.set(0, 0, 1);
-camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 const socket = io.connect('http://localhost:8000');
 socket.on('id', function (newID) {
     myID = newID;
 });
 socket.on('level', function (remoteLevel) {
-    localLevel.world = remoteLevel.world;
+    localLevel.world.dimensions = remoteLevel.world.dimensions;
+    if (localLevel.world.tiles.length === 0) {
+        // TODO server should send a diff of the level
+        for (let x = 0; x < localLevel.world.dimensions.x; x++) {
+            for (let y = 0; y < localLevel.world.dimensions.y; y++) {
+                const tile = new THREE.Mesh(boxGeometry, MATERIALS[remoteLevel.world.tiles[y * 10 + x]]);
+                tile.position.set(x - localLevel.world.dimensions.x / 2, y - localLevel.world.dimensions.y / 2, -0.5);
+                scene.add(tile);
+                localLevel.world.tiles.push(tile);
+            }
+        }
+    }
 
     Object.keys(localLevel.players).forEach(pID => {
         const pData = remoteLevel.players[pID];
