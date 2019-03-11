@@ -3,8 +3,6 @@ import io from 'socket.io-client'
 import Renderer from './renderer';
 import Controls from './controls';
 
-import './OrbitControls';
-
 let myID = null;
 
 const renderer = new Renderer(document.getElementById('main_canvas'));

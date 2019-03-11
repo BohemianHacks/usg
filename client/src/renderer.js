@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import * as OrbitControls from './OrbitControls';
+
 import MATERIALS from './materials';
 
 class Renderer {
@@ -13,7 +15,7 @@ class Renderer {
         this._camera.up.set(0, 0, 1);
         this._camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-        this._controls = new THREE.OrbitControls(this._camera);
+        this._controls = new OrbitControls(this._camera);
         this._controls.enablePan = false;
 
         this._directionalLight = new THREE.DirectionalLight('white', 0.8);
