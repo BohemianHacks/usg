@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import * as OrbitControls from './OrbitControls';
+import OrbitControls from './OrbitControls';
 
 import MATERIALS from './materials';
 
