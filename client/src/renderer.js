@@ -3,6 +3,8 @@ import OrbitControls from './OrbitControls';
 
 import MATERIALS from './materials';
 
+const CONSTANTS = require('../../shared/constants.js');
+
 class Renderer {
     constructor(canvas) {
         this._scene = new THREE.Scene();
@@ -29,6 +31,8 @@ class Renderer {
         this._webGLRenderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
 
         this._boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+        this._blockMaterial = new THREE.MeshLambertMaterial({vertexColors: THREE.FaceColors});
+
         this._playerCube = new THREE.Mesh(this._boxGeometry, new THREE.MeshLambertMaterial({color: 'blue'}));
         this._otherCube = new THREE.Mesh(this._boxGeometry, new THREE.MeshLambertMaterial({color: 'orange'}));
 
@@ -53,22 +57,45 @@ class Renderer {
 
     updateWorld(level, myID) {
         if (level.world) {
-            for (let x = 0; x < level.world.dimensions.x; x++) {
-                for (let y = 0; y < level.world.dimensions.y; y++) {
-                    for (let z = 0; z < level.world.dimensions.z; z++) {
-                        const tile = new THREE.Mesh(this._boxGeometry,
-                            MATERIALS[
-                                level.world.tiles[
-                                z * level.world.dimensions.x * level.world.dimensions.y +
-                                y * level.world.dimensions.x +
-                                x]]);
-                        tile.position.set(
-                            x - level.world.dimensions.x / 2,
-                            y - level.world.dimensions.y / 2,
-                            -z - 0.5
-                        );
-                        this._worldGroup.add(tile);
+            for (let xc = -level.world.dimensions.x; xc < level.world.dimensions.x; xc++) {
+                for (let yc = -level.world.dimensions.y; yc < level.world.dimensions.y; yc++) {
+                    const offset = {x: xc * CONSTANTS.chunkSize, y: yc * CONSTANTS.chunkSize};
+
+                    const chunk = level.world.chunks[
+                    (yc + level.world.dimensions.y) * level.world.dimensions.x
+                    + xc + level.world.dimensions.x];
+
+                    const chunkGeometry = new THREE.Geometry();
+
+                    for (let x = 0; x < CONSTANTS.chunkSize; x++) {
+                        for (let y = 0; y < CONSTANTS.chunkSize; y++) {
+                            for (let z = 0; z < CONSTANTS.chunkHeight; z++) {
+                                const vertexOffset = chunkGeometry.vertices.length;
+
+                                this._boxGeometry.vertices.forEach(v => {
+                                    chunkGeometry.vertices.push(new THREE.Vector3(
+                                        v.x + x + offset.x,
+                                        v.y + y + offset.y,
+                                        v.z - z - 0.5
+                                    ));
+                                });
+                                this._boxGeometry.faces.forEach(f => {
+                                    chunkGeometry.faces.push(new THREE.Face3(
+                                        f.a + vertexOffset,
+                                        f.b + vertexOffset,
+                                        f.c + vertexOffset,
+                                        f.normal,
+                                        MATERIALS[
+                                            chunk[
+                                            z * CONSTANTS.chunkSize * CONSTANTS.chunkSize +
+                                            y * CONSTANTS.chunkSize +
+                                            x]].color
+                                    ));
+                                });
+                            }
+                        }
                     }
+                    this._worldGroup.add(new THREE.Mesh(chunkGeometry, this._blockMaterial));
                 }
             }
         }
